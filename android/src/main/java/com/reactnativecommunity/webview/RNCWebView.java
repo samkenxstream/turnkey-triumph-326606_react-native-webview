@@ -5,10 +5,13 @@ import android.annotation.SuppressLint;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
@@ -31,12 +34,12 @@ import com.reactnativecommunity.webview.events.TopMessageEvent;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-
+// TODO: change this comment
 /**
  * Subclass of {@link WebView} that implements {@link LifecycleEventListener} interface in order
  * to call {@link WebView#destroy} on activity destroy event and also to clear the client
  */
-class RNCWebView extends WebView implements LifecycleEventListener {
+class RNCWebView extends FrameLayout implements LifecycleEventListener {
   protected static final String JAVASCRIPT_INTERFACE = "ReactNativeWebView";
 
   protected @Nullable
@@ -63,6 +66,7 @@ class RNCWebView extends WebView implements LifecycleEventListener {
   protected boolean hasScrollEvent = false;
   protected boolean nestedScrollEnabled = false;
   protected ProgressChangedFilter progressChangedFilter;
+  WebView webView;
 
   /**
    * WebView must be created with an context of the current activity
@@ -72,8 +76,21 @@ class RNCWebView extends WebView implements LifecycleEventListener {
    */
   public RNCWebView(ThemedReactContext reactContext) {
     super(reactContext);
+    this.webView = new WebView(reactContext);
+    webView.setLayoutParams(new ViewGroup.LayoutParams(
+      ViewGroup.LayoutParams.MATCH_PARENT,
+      ViewGroup.LayoutParams.MATCH_PARENT));
+    addView(this.webView);
     this.createCatalystInstance();
     progressChangedFilter = new ProgressChangedFilter();
+  }
+
+  public WebView getWebView() {
+    return this.webView;
+  }
+
+  public WebSettings getSettings() {
+    return this.webView.getSettings();
   }
 
   public void setIgnoreErrFailedForThisURL(String url) {
@@ -125,7 +142,7 @@ class RNCWebView extends WebView implements LifecycleEventListener {
 
     if (sendContentSizeChangeEvents) {
       dispatchEvent(
-        this,
+        this.webView,
         new ContentSizeChangeEvent(
           this.getId(),
           w,
@@ -135,9 +152,8 @@ class RNCWebView extends WebView implements LifecycleEventListener {
     }
   }
 
-  @Override
   public void setWebViewClient(WebViewClient client) {
-    super.setWebViewClient(client);
+    this.webView.setWebViewClient(client);
     if (client instanceof RNCWebViewManager.RNCWebViewClient) {
       mRNCWebViewClient = (RNCWebViewManager.RNCWebViewClient) client;
       mRNCWebViewClient.setProgressChangedFilter(progressChangedFilter);
@@ -145,10 +161,9 @@ class RNCWebView extends WebView implements LifecycleEventListener {
   }
 
   WebChromeClient mWebChromeClient;
-  @Override
   public void setWebChromeClient(WebChromeClient client) {
     this.mWebChromeClient = client;
-    super.setWebChromeClient(client);
+    this.webView.setWebChromeClient(client);
     if (client instanceof RNCWebViewManager.RNCWebChromeClient) {
       ((RNCWebViewManager.RNCWebChromeClient) client).setProgressChangedFilter(progressChangedFilter);
     }
@@ -196,9 +211,9 @@ class RNCWebView extends WebView implements LifecycleEventListener {
     messagingEnabled = enabled;
 
     if (enabled) {
-      addJavascriptInterface(createRNCWebViewBridge(this), JAVASCRIPT_INTERFACE);
+      this.webView.addJavascriptInterface(createRNCWebViewBridge(this), JAVASCRIPT_INTERFACE);
     } else {
-      removeJavascriptInterface(JAVASCRIPT_INTERFACE);
+      this.webView.removeJavascriptInterface(JAVASCRIPT_INTERFACE);
     }
   }
 
@@ -208,12 +223,12 @@ class RNCWebView extends WebView implements LifecycleEventListener {
 
   protected void evaluateJavascriptWithFallback(String script) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      evaluateJavascript(script, null);
+      this.webView.evaluateJavascript(script, null);
       return;
     }
 
     try {
-      loadUrl("javascript:" + URLEncoder.encode(script, "UTF-8"));
+      this.webView.loadUrl("javascript:" + URLEncoder.encode(script, "UTF-8"));
     } catch (UnsupportedEncodingException e) {
       // UTF-8 should always be supported
       throw new RuntimeException(e);
@@ -221,7 +236,7 @@ class RNCWebView extends WebView implements LifecycleEventListener {
   }
 
   public void callInjectedJavaScript() {
-    if (getSettings().getJavaScriptEnabled() &&
+    if (this.webView.getSettings().getJavaScriptEnabled() &&
       injectedJS != null &&
       !TextUtils.isEmpty(injectedJS)) {
       evaluateJavascriptWithFallback("(function() {\n" + injectedJS + ";\n})();");
@@ -229,7 +244,7 @@ class RNCWebView extends WebView implements LifecycleEventListener {
   }
 
   public void callInjectedJavaScriptBeforeContentLoaded() {
-    if (getSettings().getJavaScriptEnabled() &&
+    if (this.webView.getSettings().getJavaScriptEnabled() &&
       injectedJSBeforeContentLoaded != null &&
       !TextUtils.isEmpty(injectedJSBeforeContentLoaded)) {
       evaluateJavascriptWithFallback("(function() {\n" + injectedJSBeforeContentLoaded + ";\n})();");
@@ -241,7 +256,7 @@ class RNCWebView extends WebView implements LifecycleEventListener {
     RNCWebView mContext = this;
 
     if (mRNCWebViewClient != null) {
-      WebView webView = this;
+      WebView webView = this.webView;
       webView.post(new Runnable() {
         @Override
         public void run() {
@@ -265,7 +280,7 @@ class RNCWebView extends WebView implements LifecycleEventListener {
       if (mCatalystInstance != null) {
         this.sendDirectMessage("onMessage", eventData);
       } else {
-        dispatchEvent(this, new TopMessageEvent(this.getId(), eventData));
+        dispatchEvent(this.webView, new TopMessageEvent(this.getId(), eventData));
       }
     }
   }
@@ -304,7 +319,7 @@ class RNCWebView extends WebView implements LifecycleEventListener {
         this.getWidth(),
         this.getHeight());
 
-      dispatchEvent(this, event);
+      dispatchEvent(this.webView, event);
     }
   }
 
@@ -320,12 +335,11 @@ class RNCWebView extends WebView implements LifecycleEventListener {
     destroy();
   }
 
-  @Override
   public void destroy() {
     if (mWebChromeClient != null) {
       mWebChromeClient.onHideCustomView();
     }
-    super.destroy();
+    this.webView.destroy();
   }
 
   protected class RNCWebViewBridge {
