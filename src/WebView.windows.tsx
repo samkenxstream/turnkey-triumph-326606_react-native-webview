@@ -278,3 +278,8 @@ export default class WebView extends React.Component<WindowsWebViewProps, State>
   }
 
 }
+
+export function releaseWebView(_webViewKey: string) {
+  // no-op
+}
+
