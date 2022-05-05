@@ -39,4 +39,5 @@ export default class WebView extends React.Component<WindowsWebViewProps, State>
     onHttpError: (event: WebViewHttpErrorEvent) => void;
     render(): JSX.Element;
 }
+export declare function releaseWebView(_webViewKey: string): void;
 //# sourceMappingURL=WebView.windows.d.ts.map
