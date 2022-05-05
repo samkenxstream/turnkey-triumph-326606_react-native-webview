@@ -385,7 +385,3 @@ class WebView extends React.Component<AndroidWebViewProps, State> {
 }
 
 export default WebView;
-
-export function releaseWebView(webViewKey: string) {
-  NativeModules.RNCWebView.release(webViewKey);
-}

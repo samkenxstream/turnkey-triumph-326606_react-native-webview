@@ -32,8 +32,6 @@ const source = {
 export default function Portals() {
   const [pageNumber, setPageNumber] = React.useState(PORTALS_PAGE);
 
-
-
   const togglePages = () => {
     const nextPage =  pageNumber === PORTALS_PAGE ? NONPORTALS_PAGE : PORTALS_PAGE;
     setPageNumber(nextPage);

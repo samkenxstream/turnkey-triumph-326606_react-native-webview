@@ -345,7 +345,3 @@ class WebView extends React.Component<MacOSWebViewProps, State> {
 }
 
 export default WebView;
-
-export function releaseWebView(_webViewKey: string) {
-  // no-op
-}
