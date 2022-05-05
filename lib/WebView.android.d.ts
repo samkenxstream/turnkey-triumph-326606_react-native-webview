@@ -38,6 +38,7 @@ declare class WebView extends React.Component<AndroidWebViewProps, State> {
         injectJavaScript: number;
         loadUrl: number;
         requestFocus: number;
+        release: number;
         clearHistory: number;
         clearCache: number;
         clearFormData: number;
@@ -58,6 +59,7 @@ declare class WebView extends React.Component<AndroidWebViewProps, State> {
      * functionality, look into postMessage/onMessage.
      */
     injectJavaScript: (data: string) => void;
+    release: () => void;
     /**
      * We return an event with a bunch of fields including:
      *  url, title, loading, canGoBack, canGoForward
@@ -78,5 +80,4 @@ declare class WebView extends React.Component<AndroidWebViewProps, State> {
     render(): JSX.Element;
 }
 export default WebView;
-export declare function releaseWebView(webViewKey: string): void;
 //# sourceMappingURL=WebView.android.d.ts.map
