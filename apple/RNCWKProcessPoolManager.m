@@ -21,6 +21,7 @@
         if(_sharedManager == nil) {
             _sharedManager = [[super alloc] init];
         }
+        NSLog(@"hello this is neal fork");
         return _sharedManager;
     }
 }
