@@ -31,7 +31,7 @@ jobs:
         run: yarn --frozen-lockfile
         shell: bash
       - name: Build Android test app
-        uses: gradle/gradle-build-action@v2.1.3
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           gradle-version: wrapper
           arguments: --no-daemon clean build check test
